@@ -20,10 +20,27 @@
 			Array.Sort(calories);
 
 			Part1(calories);
+			Part2(calories);
 		}
 
+		/// <summary>
+		/// Gets the elf with the most calories.
+		/// </summary>
+		/// <param name="calories">Array with all the elf calories data.</param>
 		static void Part1(int[] calories) {
 			Console.WriteLine(calories.Last());
+		}
+
+		/// <summary>
+		/// Gets the 3 elfs with the most calories.
+		/// </summary>
+		/// <param name="calories">Array with all the elf calories data.</param>
+		static void Part2(int[] calories) {
+			int last = calories.Length - 1;
+			int total = calories[last];
+			total += calories[last - 1];
+			total += calories[last - 2];
+			Console.WriteLine(total);
 		}
 	}
 }
