@@ -6,6 +6,7 @@
 			string[] sections = File.ReadAllLines(file);
 
 			Part1(sections);
+			Part1(sections);
 		}
 
 		/// <summary>
@@ -26,6 +27,28 @@
 					inside++;
 			}
 			Console.WriteLine(inside);
+		}
+
+		/// <summary>
+		/// Check if the sections overlap at all.
+		/// </summary>
+		/// <param name="input">Input of all cleaing sections per pair.</param>
+		static void Part2(string[] input) {
+			int overlap = 0;
+
+			foreach(string line in input) {
+				//Split out the two strings of sections
+				string[] parts = line.Split(",");
+				int[] first = parts[0].Split("-").Select(int.Parse).ToArray();
+				int[] second = parts[1].Split("-").Select(int.Parse).ToArray();
+
+				//Check for any overlap
+				if(second[0] >= first[0] && second[0] <= first[1] || second[1] >= first[0] && second[1] <= first[1] ||
+				first[0] >= second[0] && first[0] <= second[1] || first[1] >= second[0] && first[1] <= second[1])
+					overlap++;
+
+			}
+			Console.WriteLine(overlap);
 		}
 	}
 }
