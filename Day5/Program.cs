@@ -74,7 +74,8 @@
 			string file = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\moves.txt"));
 			string[] data = File.ReadAllLines(file);
 
-			Part1(crates, data);
+			//Part1(crates, data);
+			Part2(crates, data);
 		}
 
 		/// <summary>
@@ -97,6 +98,32 @@
 					//Remove the element
 					crates[from].RemoveAt(crates[from].Count - 1);
 				}
+			}
+
+			//Print the top of each crate
+			foreach(List<char> list in crates)
+				Console.Write(list.ElementAt(list.Count - 1));
+		}
+
+		/// <summary>
+		/// Move a group of crates from one stack to another in the same order.
+		/// </summary>
+		/// <param name="crates">All the crates in their stacks.</param>
+		/// <param name="moves">How the crates should be moved between the stacks.</param>
+		static void Part2(List<List<char>> crates, string[] moves) {
+			//Go through all input lines
+			foreach(string line in moves) {
+				string[] parts = line.Split(" ");
+
+				int amount = int.Parse(parts[1]);
+				int from = int.Parse(parts[3]) - 1;
+				int to = int.Parse(parts[5]) - 1;
+				List<char> tmp = new();
+
+				//Add group at new crate
+				crates[to].AddRange(crates[from].GetRange(crates[from].Count - amount, amount));
+				//Remove from the old crate
+				crates[from].RemoveRange(crates[from].Count - amount, amount);
 			}
 
 			//Print the top of each crate
