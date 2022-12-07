@@ -35,6 +35,7 @@ namespace Day7 {
 			}
 
 			Part1(dirs);
+			Part2(dirs, 70000000, 30000000);
 		}
 
 		/// <summary>
@@ -48,6 +49,23 @@ namespace Day7 {
 					sum += dir.Value;
 			}
 			Console.WriteLine(sum);
+		}
+
+		/// <summary>
+		/// Find the needed size to delete and remove the smallest directory that fufills that size.
+		/// </summary>
+		/// <param name="dirs">All directory sizes in <see cref="Dictionary{string, int}"/></param>
+		static void Part2(Dictionary<string, int> dirs, int totalSpace, int neededSpace) {
+			//Root dir has total size, remove that from the total space
+			int remaining = totalSpace - dirs.First().Value;
+			int removalSize = neededSpace - remaining;
+
+			int minDir = int.MaxValue;
+			foreach(KeyValuePair<string, int> dir in dirs) {
+				if(dir.Value > removalSize && dir.Value < minDir)
+					minDir = dir.Value;
+			}
+			Console.WriteLine(minDir);
 		}
 	}
 }
