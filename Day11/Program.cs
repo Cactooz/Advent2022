@@ -24,7 +24,7 @@
 						string[] presents = info.Remove(0, 18).Split(", ");
 						foreach(string present in presents)
 							//Add the present to the start
-							items.Insert(0, int.Parse(present));
+							items.Add(int.Parse(present));
 					} else if(info.Contains("Operation")) {
 						string numberString = info.Split(" ").Last();
 						//Differentiate between +, * and numbers and itself
@@ -50,6 +50,26 @@
 				monkeys.Add(new(items, operation, test, trueThrow, falseThrow));
 			}
 
+            //Do 20 rounds of throwing
+            for(int i = 0; i < 20; i++) {
+                foreach(Monkey monkey in monkeys) {
+                    while(monkey.Items.Count > 0) {
+                        long[] throwTo = monkey.InspectFirst();
+
+                        monkeys[(int)throwTo[0]].Items.Add((int)throwTo[1]);
+						monkey.ThrowCount++;
+                    }
+                }
+            }
+
+			int[] throws = new int[2];
+			//Pick out the two monkeys with the most throws
+			foreach(Monkey monkey in monkeys) {
+				if(monkey.ThrowCount > throws.Min())
+					throws[Array.IndexOf(throws, throws.Min())] = monkey.ThrowCount;
+			}
+
+			Console.WriteLine(throws[0] * throws[1]);
 		}
 
 		/// <summary>
@@ -61,6 +81,7 @@
 			private readonly int test;
 			private readonly int trueThrow;
 			private readonly int falseThrow;
+			private int throwCount;
 
 			/// <summary>
 			/// Create a new <see cref="Monkey"/>.
@@ -76,9 +97,32 @@
 				this.test = test;
 				this.trueThrow = trueThrow;
 				this.falseThrow = falseThrow;
+				throwCount = 0;
 			}
 
-			public List<int> Operation { get; set; }
+			/// <summary>
+			/// All the items the <see cref="Monkey"/> holds with their worry level in a <see cref="int"/> <see cref="List{T}"/>.
+			/// </summary>
+			public List<int> Items { get => items; set => items = value; }
+
+			/// <summary>
+			/// The amount of times the <see cref="Monkey"/> has thrown an item to another <see cref="Monkey"/>.
+			/// </summary>
+			public int ThrowCount { get => throwCount; set => throwCount = value; }
+
+			/// <summary>
+			/// Inspect the first element in the <see cref="Monkey"/> <see cref="items"/> <see cref="int"/> <see cref="List{T}"/>.
+			/// Removing it from the list and updating its worry level and calculating which monkey it should be thrown to.
+			/// </summary>
+			/// <returns>A <see cref="int"/> <see cref="Array"/> containing the <see cref="Monkey"/> index to throw to and the worry level of the item.</returns>
+            public long[] InspectFirst() {
+                long worry = operation(items.ElementAt(0)) / 3;
+                items.RemoveAt(0);
+
+                if(worry % test == 0)
+                    return new long[] { trueThrow, worry };
+                return new long[] { falseThrow, worry };
+            }
 		}
 	}
 }
