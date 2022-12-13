@@ -6,9 +6,10 @@
 			string data = File.ReadAllText(file);
 
 			List<Monkey> monkeys = new();
+            long allMod = 1;
 
-			//Read all the monkey data per monkey
-			foreach(string line in data.Split("\r\n\r\n")) {
+            //Read all the monkey data per monkey
+            foreach(string line in data.Split("\r\n\r\n")) {
 				//Set up base varaibles to fill
 				List<int> items = new();
 				Func<long, long> operation = item => item;
@@ -40,7 +41,7 @@
 								operation = item => item * item;
 						}
 					} else if (info.Contains("Test"))
-						test = int.Parse(info.Split(" ").Last());
+                        test = int.Parse(info.Split(" ").Last());
 					else if(info.Contains("If true"))
 						trueThrow = int.Parse(info.Split(" ").Last());
 					else if(info.Contains("If false"))
@@ -48,29 +49,56 @@
 				}
 				//Add the monkey
 				monkeys.Add(new(items, operation, test, trueThrow, falseThrow));
-			}
-
-            //Do 20 rounds of throwing
-            for(int i = 0; i < 20; i++) {
-                foreach(Monkey monkey in monkeys) {
-                    while(monkey.Items.Count > 0) {
-                        long[] throwTo = monkey.InspectFirst();
-
-                        monkeys[(int)throwTo[0]].Items.Add((int)throwTo[1]);
-						monkey.ThrowCount++;
-                    }
-                }
+                allMod *= test;
             }
 
-			int[] throws = new int[2];
-			//Pick out the two monkeys with the most throws
-			foreach(Monkey monkey in monkeys) {
-				if(monkey.ThrowCount > throws.Min())
-					throws[Array.IndexOf(throws, throws.Min())] = monkey.ThrowCount;
-			}
+			Console.Write("Run part1 or part2: ");
+			int run = int.Parse(Console.ReadLine());
 
-			Console.WriteLine(throws[0] * throws[1]);
-		}
+			if(run == 1) {
+                //Do 20 rounds of throwing
+                for(int i = 0; i < 20; i++) {
+                    foreach(Monkey monkey in monkeys) {
+                        while(monkey.Items.Count > 0) {
+                            long[] throwTo = monkey.InspectFirst1();
+
+                            monkeys[(int)throwTo[0]].Items.Add((int)throwTo[1]);
+                            monkey.ThrowCount++;
+                        }
+                    }
+                }
+
+                uint[] throws = new uint[2];
+                //Pick out the two monkeys with the most throws
+                foreach(Monkey monkey in monkeys) {
+                    if(monkey.ThrowCount > throws.Min())
+                        throws[Array.IndexOf(throws, throws.Min())] = monkey.ThrowCount;
+                }
+
+                Console.WriteLine(throws[0] * throws[1]);
+            } else {
+				//Do 10000 rounds of throwing
+                for(int i = 0; i < 10000; i++) {
+                    foreach(Monkey monkey in monkeys) {
+                        while(monkey.Items.Count > 0) {
+                            long[] throwTo = monkey.InspectFirst2(allMod);
+
+                            monkeys[(int)throwTo[0]].Items.Add((int)throwTo[1]);
+                            monkey.ThrowCount++;
+                        }
+                    }
+                }
+
+                uint[] throws = new uint[2];
+                //Pick out the two monkeys with the most throws
+                foreach(Monkey monkey in monkeys) {
+                    if(monkey.ThrowCount > throws.Min())
+                        throws[Array.IndexOf(throws, throws.Min())] = monkey.ThrowCount;
+                }
+
+                Console.WriteLine((ulong)throws[0] * throws[1]);
+            }
+        }
 
 		/// <summary>
 		/// A single monkey with all its different information about moves, worry levels etc.
@@ -81,7 +109,7 @@
 			private readonly int test;
 			private readonly int trueThrow;
 			private readonly int falseThrow;
-			private int throwCount;
+			private uint throwCount;
 
 			/// <summary>
 			/// Create a new <see cref="Monkey"/>.
@@ -108,14 +136,15 @@
 			/// <summary>
 			/// The amount of times the <see cref="Monkey"/> has thrown an item to another <see cref="Monkey"/>.
 			/// </summary>
-			public int ThrowCount { get => throwCount; set => throwCount = value; }
+			public uint ThrowCount { get => throwCount; set => throwCount = value; }
 
-			/// <summary>
-			/// Inspect the first element in the <see cref="Monkey"/> <see cref="items"/> <see cref="int"/> <see cref="List{T}"/>.
-			/// Removing it from the list and updating its worry level and calculating which monkey it should be thrown to.
-			/// </summary>
-			/// <returns>A <see cref="int"/> <see cref="Array"/> containing the <see cref="Monkey"/> index to throw to and the worry level of the item.</returns>
-            public long[] InspectFirst() {
+            /// <summary>
+            /// Inspect the first element in the <see cref="Monkey"/> <see cref="items"/> <see cref="int"/> <see cref="List{T}"/>.
+            /// Removing it from the list and updating its worry level and calculating which <see cref="Monkey"/> it should be thrown to.
+            /// For the first part where the worry levels are divided by 3.
+            /// </summary>
+            /// <returns>A <see cref="int"/> <see cref="Array"/> containing the <see cref="Monkey"/> index to throw to and the worry level of the item.</returns>
+            public long[] InspectFirst1() {
                 long worry = operation(items.ElementAt(0)) / 3;
                 items.RemoveAt(0);
 
@@ -123,6 +152,22 @@
                     return new long[] { trueThrow, worry };
                 return new long[] { falseThrow, worry };
             }
-		}
+
+            /// <summary>
+            /// Inspect the first element in the <see cref="Monkey"/> <see cref="items"/> <see cref="int"/> <see cref="List{T}"/>.
+            /// Removing it from the list and updating its worry level and calculating which <see cref="Monkey"/> it should be thrown to. 
+			/// For the second part where the worry levels are taken mod the total <see cref="operation"/> size multipled from all <see cref="Monkey"/> objects.
+            /// </summary>
+			/// <param name="mod">The mod value that the worry level should be calculated with.</param>
+            /// <returns>A <see cref="int"/> <see cref="Array"/> containing the <see cref="Monkey"/> index to throw to and the worry level of the item.</returns>
+            public long[] InspectFirst2(long mod) {
+                long worry = operation(items.ElementAt(0)) % mod;
+                items.RemoveAt(0);
+
+                if(worry % test == 0)
+                    return new long[] { trueThrow, worry };
+                return new long[] { falseThrow, worry };
+            }
+        }
 	}
 }
